@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>form prueba</title>
+    <script src="../js/SummaryBuilder.js"></script>
+    <script src="../js/Classes.js"></script>
+    <script src="../js/nouislider.min.js"></script>
+    <link rel="stylesheet" href="../css/nouislider.min.css">
+    <style>
+        .flexColumn{
+            flex-direction: column;
+        }
+        .flexRow{
+            flex-direction: row;
+        }
+        .flexDisplay{
+            display: flex; 
+        }
+        .center{            
+            align-items:center; 
+            justify-content: space-around;
+        }
+        .textArea{
+            min-height: 5em; 
+            min-width: 25em;
+        }
+        .select{
+            min-width: 100%;
+        }
+        .lineaTexto{
+            width: 96%;
+        }
+        .formularios{
+            border-style: solid;
+            border-color: black;
+            border-width: 3px;
+            margin:1%;
+            padding:1%;
+        }
+        .ElSlider{
+            margin-left: 10%;
+            margin-right: 10%;
+            padding-bottom: 15%;
+            padding-top: 5%;
+            width: 161px;
+        }
+        .active-pip {
+            font-weight: bold;
+            color: black;
+            font-weight: bold;
+        }
+        .resaltar{
+            font-weight: bold;
+            text-decoration:underline;
+        }
+        .paddingLateral{
+            padding-left: 1%;
+            padding-right: 1%;
+        }
+        .horizontal_scroll{
+            overflow-x: scroll;
+            overflow-y: hidden;
+            transform: rotateX(180deg);
+        }
+        .horizontal_scroll > * {
+            flex: 0 0 auto;
+            transform: rotateX(180deg);
+        }
+        #listaTablas{
+            align-items: flex-end;
+        }
+        .width90per100{
+            width: 90%;
+        }
+    </style>
+    <script>
+        window.enlacesPerma=[];
+        //Opcional: 
+        //- subtitulos con nombres son el maximo de anidacion si >= max anidacion y evita que haya subtitulos sin nombres
+        //
+        //- opcion de intercalar, de detectar lineas en blanco en el textarea he interpretarlas como huecos para subtitulos sin nombre
+        //- en esta opcion de intercalar al menos parte de los subtitulos sin nombre se añaden desde el textarea (donde los con nombre y se a de tener encuenta para el slider)
+        //
+        //Falta:
+        //- extraer toda la info para las tablas desde formularios
+        //- toda la configuracion de colores a todos los niveles
+        //- aplicar la info en obtenerFormulario()
+        document.addEventListener("DOMContentLoaded", function() {                                
+            //lista tablas
+            window.listaTablasConf=document.getElementById("listaTablas");
+
+            window.listaTablasConfArray=[];
+            for (let i = 1; i <= 12; i++) {
+                window.listaTablasConfArray.push(new TablaConfClass(i));
+            }
+
+            window.sliderTablas = new SlidersClass('sliderTablas',0,12,[1]);
+            window.sliderTablas.createSlider(function(values, handle) {
+                window.listaTablasConf.innerHTML = '';
+                window.listaTablasConf.replaceChildren();
+                for (let i = 1; i <= values[handle]; i++) {
+                    window.listaTablasConf.appendChild(window.listaTablasConfArray[i-1].getTablaConf());
+                    window.listaTablasConfArray[i-1].enlazar();
+                }
+            });
+            //cabecera
+            window.unidadesSelect=new SelectsClass("unidades_rows","No seleccionar unidad actual.");
+            window.enlacesPerma.push(new TextAreaLinkSelectClass(new TextAreasClass("unidades"),window.unidadesSelect));
+            window.enlacesPerma.push(new SelectLinkTextInputClass(window.unidadesSelect,new TextInputClass("unidad_seleccionada_custom")));
+            
+            window.curso=new TextInputClass("curso");
+            window.nombreUnidades=new TextInputClass("nombreUnidades");
+            window.nombreUnidadesAcronimo=new TextInputClass("nombreUnidadesAcronimo");
+
+        });
+    </script>
+</head>
+<body>
+    <form class="flexDisplay center flexColumn" action="javascript:obtenerFormulario()" method="post">
+        <div class="flexColumn center flexDisplay formularios">   
+            <input type="submit" value="Generar Resumen">
+            <div class="flexDisplay center flexRow"> 
+                <div class="flexColumn center flexDisplay">
+                    <span class="resaltar">Unidades</span>
+                    <label for="nombreUnidades">Nombre Iterable Opcional</label>
+                    <input name="nombreUnidades" id="nombreUnidades" type="text" placeholder="Unidad de aprendizaje">
+                    <label for="nombreUnidadesAcronimo">Acronimo opcional</label>
+                    <input name="nombreUnidadesAcronimo" id="nombreUnidadesAcronimo" type="text" placeholder="UA">
+                </div>
+                <div class="flexColumn center flexDisplay">
+                    <label class="resaltar" for="unidades">Unidades:</label>
+                    <textarea class="textarea" id="unidades" name="unidades" rows="5" cols="25" placeholder="Constitución jurídica del pequeño negocio o microempresa&#10;Planificación y organicación de los recursos en pequeños negocios o microempresas&#10;&#10;Planificación económico-financiera previsional de la actividad económica en pequeños negocios o microempresas"></textarea>
+                </div>
+                <div class="flexColumn center flexDisplay">
+                    <span class="resaltar">General</span>
+                    <label for="curso">Nombre del curso</label>
+                    <input class="lineaTexto" type="text" id="curso" name="curso" placeholder="UF/MF0777: COMO CREAR EL MEJOR CENTRO DE FORMACIÓN ONLINE">
+                    <label class="resaltar" for="unidades_rows">Unidad Actual</label>                        
+                    <select class="select" name="unidades_rows" id="unidades_rows">
+                        
+                    </select>
+                    <input class="lineaTexto" type="text" id="unidad_seleccionada_custom">
+                </div>
+            </div>
+        </div>
+        <div class="flexDisplay center flexColumn formularios">
+            <span class="resaltar">Configuración Tablas</span><!--añadir aqui colores de las flechas a elegir-->
+            <div class="flexDisplay center flexRow">
+                <div class="flexDisplay center flexColumn">
+                    <label for="tituloTabla">Titulo Tabla Iterable Opcional</label>
+                    <input class="lineaTexto" type="text" id="tituloTabla" name="tituloTabla" placeholder="Ciclo Tematico">
+                    <div class="flexDisplay center flexRow">
+                        <input type="checkbox" id="tituloTablaIterabilidad" name="tituloTablaIterabilidad">
+                        <label for="tituloTablaIterabilidad">Apagar Iterabilidad</label>
+                    </div>
+                    <div class="flexDisplay center flexRow">
+                        <input type="checkbox" id="ocultarTodosTitulos" name="ocultarTodosTitulos">
+                        <label for="ocultarTodosTitulos">Ocultar Todos los titulos</label>
+                    </div>
+                </div>
+                <div class="flexColumn center flexDisplay">    
+                    <span>Nº Tablas:</span>
+                    <div class="ElSlider"><div id="sliderTablas"></div></div> 
+                </div>
+            </div>        
+        </div>  
+        <div class="flexDisplay flexRow width90per100 horizontal_scroll formularios" id="listaTablas">
+        </div>
+    </form>
+    <div id="scorm_tree"></div>
+    <div id="plantilla_infoID" class="plantilla_info"
+        style="width: fit-content; margin: 20px auto;">
+    </div>
+    <div id="todas_tablas">
+    </div>
+    <form action method="post">
+        <textarea id="texto" name="texto"     
+            style="width:90%;height:500px;"></textarea>
+    </form>
+</body>
+</html>
+
+

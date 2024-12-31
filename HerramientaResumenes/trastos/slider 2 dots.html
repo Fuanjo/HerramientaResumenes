@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Range Slider Example</title>
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@14.7.0/distribute/nouislider.min.css"> -->
+<link rel="stylesheet" href="../css/nouislider.min.css">
+<style>
+#ElSlider{
+    padding: 50px;
+}
+#slider {
+    width: 300px;
+}
+.active-pip {
+    font-weight: bold;
+    color: black;
+    font-weight: bold;
+}
+</style>
+
+</head>
+<body>
+
+<div id="ElSlider"><div id="slider"></div></div>
+<div id="labels">
+    <span id="minLabel">0</span>
+    <span id="maxLabel">12</span>
+</div>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/nouislider@14.7.0/distribute/nouislider.min.js"></script> -->
+<script src="../js/nouislider.min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/wNumb@2.1.1"></script> -->
+<script>
+let slider = document.getElementById('slider');
+
+noUiSlider.create(slider, {
+    start: [0, 12],
+    connect: true,
+    range: {
+        'min': 0,
+        'max': 12
+    },
+    behaviour: 'drag-smooth-steps-tap', 
+    tooltips: [true, true],
+    step: 1,
+    // format: wNumb({
+    //     decimals: 0
+    // }),
+    pips: {
+        mode: 'steps',
+        stepped: true,
+        density: 6
+    }
+});
+let activePips = [null, null];
+slider.noUiSlider.on('update', function (values, handle) {
+    document.getElementById('minLabel').textContent = values[0];
+    document.getElementById('maxLabel').textContent = values[1];
+
+    // Remove the active class from the current pip
+    if (activePips[handle]) {
+        activePips[handle].classList.remove('active-pip');
+    }
+
+    // Match the formatting for the pip
+    let dataValue = Math.round(values[handle]);
+
+    // Find the pip matching the value
+    activePips[handle] = slider.querySelector('.noUi-value[data-value="' + dataValue + '"]');
+
+    // Add the active class
+    if (activePips[handle]) {
+        activePips[handle].classList.add('active-pip');
+    }
+});
+</script>
+
+</body>
+</html>

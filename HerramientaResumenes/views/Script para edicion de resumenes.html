@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Este script es de sucio, mantener la plantilla limpia para copiar y pegar</title>
+        <script src="../js/SummaryBuilder.js"></script>
+        <script>            
+
+/**
+ * window.onload event handler
+ * 
+ *
+ * This function is called when the page has finished loading. It will:
+ * - Set up the colors for the tree and the blocks
+ * - Fill the tree with data
+ * - Create the tree items
+ * - Create the blocks and add them to the page
+ * - Remove the "todo_contenido" div from the page
+ * - Put all the HTML content into a textarea
+ * 
+ * @param {Event} event The window.onload event
+ */
+            window.onload = function() {
+                const margen="<br><br><br><br>";
+                const blanco = "#ffffff";
+                const negro = "#000000";
+                const naranjaP="#aa3d00";
+                const naranjaS="#db9d00";
+                const naranjaT="#ffdbb9";
+                const azulP="#0051A3";
+                const azulS="#61bee9";
+                const azulT='#d9e8ff';
+                const verdeP="#3c6500";
+                const verdeS="#93a140";
+                const verdeT="#cdffcd";
+                const moradoP="#5f0079";
+                const moradoS="#8a53c2";
+                const moradoT="#e4cdff";
+                const rojoP="#ce170c";
+                const rojoS="#ce332a";
+                const rojoT="#ff6968";
+
+                const coloresPrincipales=[azulP,naranjaP,verdeP,moradoP];
+                const coloresSecundarios=[azulS,naranjaS,verdeS,moradoS];
+                const coloresColumnas=[azulT,naranjaT,verdeT,moradoT];
+                const coloresFlechas=[moradoS,verdeS,azulS,naranjaS];
+                //
+
+                let unidades=[
+"Organización y control de la actividad en pequeños negocios o microempresas.",
+"Organización y gesión laboral en pequeños negocios o microempresas.",
+"Gestión de recursos humanos en pequeños negocios o microempresas.",
+"Adquisición y mantenimiento de activos fijos de pequeños negocios o microempresas.",
+"Aprovisionamiento de existencias y técnicas de negociación con proveedores.",
+"Gestión y control del almacén en pequeños negocios o microempresas.",
+"Gestión de calidad y medioambiental en pequeños negocios o microempresas."
+                ];
+                let cabecera=new CabeceraClass("UF1789 DIRECCIÓN DE LA ACTIVIDAD EMPRESARIAL DE PEQUEÑOS NEGOCIOS O MICROEMPRESAS","UA");
+                cabecera.setUnidades(unidades,7,"Unidad de aprendizaje");
+                cabecera.setUnidadActual(6);
+                cabecera.fillScormTree();
+
+                //bloqueFlecha id_num titulo subtitulo color_flecha color_tablaP color_secundario
+
+                let subtitulos=[
+                    "Ámbito Temático",
+                    "Conceptos",
+                    "Objetivo Final",
+                    "ANÁLISIS Y TRAVÉS DE RATIOS",
+                    "RENTABILIDAD DE PROYECTOS DE INVERSIÓN",
+                    "APLICACIONES INFORMÁTICAS",
+                    "VARIABLES DE UBICACIÓN DE LA EMPRESA",
+                    "DECISIONES DE INVERSIÓN",
+                    "CONTROL DE GESTIÓN",
+                    "ÁREAS CRÍTICAS",
+                    "NUEVAS FORMAS DE FINANCIACIÓN"
+                ];
+                subtitulos=reduceArrayToLength(subtitulos,3);
+                const ejemplos=[
+                    "","Definición y Tipos:","","Características Principales de las siguientes Sociedades:",
+                    "a","","",
+                    "Reglas de la comunicación telefónica"
+                ];
+                let ejemLen=ejemplos.length;
+                //comentar/descomentar para que se utilizen "ejemplos" o no
+                ejemLen=-1;
+                const maxElementosPorColumna=[
+                  1,1,1,1,2,1,2,1,2,2,2
+                ];
+                const maxElementosPorEjemplo=[
+                  0,2,0,2,0,0,1,0
+                ];
+                let maxColumns=2;
+
+                //al depender el bucle de los subtitulos aunque abajo se dejencosas sin borrar no aparecen
+                let subtTituLength = subtitulos.length;
+
+
+                coloresPrincipales[subtTituLength-1]=rojoP;
+                coloresSecundarios[subtTituLength-1]=rojoS;
+                coloresColumnas[subtTituLength-1]=rojoT;
+                coloresFlechas[subtTituLength-1]=rojoS;
+                // coloresPrincipales.splice(5,0,rojoP);
+                // coloresSecundarios.splice(5,0,rojoS);
+                // coloresColumnas.splice(5,0,rojoT);
+                // coloresFlechas.splice(2,0,rojoS);
+                for (let i = 0; i < subtTituLength; i++) {
+                    let colorIndex = i % coloresPrincipales.length;
+                    let bloquer = new BloquesFlechaClass(i,i == subtTituLength - 1 ? true : false);
+                    bloquer.setFlechaColor(coloresFlechas[colorIndex],blanco);
+                    // let table=new TablasClass(coloresPrincipales[colorIndex],(i===0?"RESUMEN DE LA UNIDAD":"Ciclo Temático " + (i)));
+                    let table=new TablasClass(coloresSecundarios[colorIndex],subtitulos[i]);
+                    if(i===0){
+                        // table.setTituloPropety("border-radius", "10px 10px 10px 10px");
+                    }
+                    table.setTituloPropety("color",blanco);   
+                    if (subtTituLength > i) {          
+                        let elementos=new ColumnsContainersClass("ColumnasContainer",maxElementosPorColumna[i],maxColumns);
+                        elementos.setColumnsColor(coloresColumnas[colorIndex]);
+                        elementos.buildContainer("contenido" + (i + 1));
+                        // table.setSubtitulo(subtitulos[i],"subtitulo" + (i + 1),coloresSecundarios[colorIndex]); 
+                        table.setColumnasPorListas(elementos.getContainer());
+                    }else{
+                        // table.setSubtitulo(subtitulos[i],"subtitulo" + (i + 1),coloresSecundarios[colorIndex],"border-radius: 5px 5px 10px 10px;"); 
+                    }    
+                    if(ejemLen>i){       
+                        let columnasEjemplos=new ColumnsContainersClass("ColumnasContainer",maxElementosPorColumna[i],maxColumns);
+                        columnasEjemplos.setColumnsColor(coloresColumnas[colorIndex]);
+                        columnasEjemplos.buildContainer("ejemplo" + (i + 1));
+                        table.setSubtitulo(ejemplos[i],"ejemplor" + (i + 1),coloresSecundarios[colorIndex]);
+                        // table.setColumnasPorListas(columnasEjemplos.getContainer());
+                    }else{
+                        // table.setSubtitulo(ejemplos[i],"ejemplor" + (i + 1),coloresSecundarios[colorIndex],"border-radius: 5px 5px 10px 10px;");
+                    }
+                    table.buildTabla();
+                    // if(i!==0){
+                        bloquer.setBloqueFlechaProperty("width","fit-content");
+                    // }else{
+                    //     bloquer.setBloqueFlechaProperty("width","70%");
+                    // }
+                    bloquer.buildBloque(table.getTablaContenidos());
+                }
+                document.getElementById("todo_contenido").style.display  = "none";
+                let todasTablas=document.getElementById("todas_tablas");
+                todasTablas.style.display="flex";
+                todasTablas.style.flexDirection="column";
+                todasTablas.style.alignItems="center";
+                todasTablas.innerHTML=todasTablas.innerHTML+margen;
+                let plant_info=document.querySelector(".plantilla_info");
+                plant_info.insertAdjacentHTML('beforebegin', margen);
+
+                //"exportador" de html
+                // let bloqueFlechas = document.querySelectorAll("[id^='bloque_flecha_']");
+
+                let scormTree = document.getElementById('scorm_tree').outerHTML;
+                let htmlContent = scormTree;
+                htmlContent = htmlContent+margen+plant_info.outerHTML;
+                // bloqueFlechas.forEach(bloque => {
+                //     htmlContent += bloque.outerHTML;
+                // });
+                htmlContent += todasTablas.outerHTML;
+
+                document.body.removeChild(document.getElementById("todo_contenido"));
+
+                document.getElementById('texto').value = htmlContent+margen;
+                // let nums=[getRandom0To20(),getRandom0To20(),getRandom0To20(),getRandom0To20()];
+                // console.log(nums);
+                // console.log(calculateColumns(nums[0],nums[1],nums[2],nums[3]));
+            };
+        </script>
+    </head>
+    <body>
+        <div id="scorm_tree"></div>
+        <div id="plantilla_infoID" class="plantilla_info"
+            style="width: fit-content; margin: 20px auto;">
+        </div>
+        <div id="todas_tablas">
+
+        </div>
+        <div id="todo_contenido">
+            <ul id="ejemplo2">
+                <li>Ventas</li>
+                <li>Compras</li>
+                <li>Tesorería</li>
+                <li>Producción</li>
+                <li>Costo-producción</li>
+            </ul>
+            <ul id="ejemplo4">
+                <li>Unipersonal</li>
+                <li>Limitada</li>
+                <li>Colectiva</li>
+                <li>Cooperativa</li>
+                <li>Anónima</li>
+                <li>Laboral</li>
+                <li>Comanditaria</li>
+            </ul>
+
+            <ul id="contenido1">
+                <li>Incidencia en la prestación de servicios</li>
+                <li>Incidencia en la estrategia competitiva</li>
+            </ul>
+            <ul id="contenido2">
+                <li>Normativa y legislación</li>
+                <li>Implantación de un sistema de gestión de calidad y medioambiente</li>
+            </ul>
+            <ul id="contenido3">
+                <li>Gestión documental informatizada</li>
+            </ul>
+            <ul id="contenido4">
+                <li>Financieros, Económicos y de Rotación</li>
+            </ul>
+            <ul id="contenido5">
+                <li>El VAN y el TIR</li>
+            </ul>
+            <ul id="contenido6">
+                <li>La hoja de cálculo</li>
+            </ul>
+            <ul id="contenido7">
+                <li>Variables de ubicación</li>
+            </ul>
+            <ul id="contenido8">
+                <li>Instalaciones, equipamientos y medios</li>
+            </ul>
+            <ul id="contenido9">
+                <li>Definición y elementos de gestión</li>
+            </ul>
+            <ul id="contenido10">
+                <li>Áreas críticas y medios de ajuste</li>
+            </ul>
+            <ul id="contenido11">
+                <li>Crowdfunding</li>
+                <li>Business Angels</li>
+            </ul>
+            <ul id="contenido12">
+                <li>Inteligencia emocional</li>
+                <li>Barreras y dificultades de la comunicación comercial presencial</li>
+                <li>La comunicación no verbal a través del comportamiento y el cuerpo I</li>
+                <li>La comunicación no verbal a través del comportamiento y el cuerpo II</li>
+                <li>La comunicación no verbal a través del cuerpo: manos, mirada, posición, espacio entre interlocutores u otros</li>
+                <li>Claves para dominar la venta sin palabras</li>
+            </ul>
+            <ul id="contenido13">
+                <li>Recursos y medios de comunicación no presencial</li>
+                <li>Barreras en la comunicación no presencial</li>
+                <li>Técnicas de la sonrisa telefónica: Concepto</li>
+                <li>Técnicas de la sonrisa telefónica: Práctica</li>
+                <li>Cartas y documentación comercial escrita: Misión</li>
+                <li>Cartas y documentación comercial escrita: Cualidades fundamentales</li>
+            </ul>
+            <ul id="contenido14">
+                <li>Introducción</li>
+                <li>La teoría hipodérmica, las 5 preguntas y el flujo en dos pasos</li>
+                <li>La teoría de Gatekeeper, los usos y gratificaciones y el establecimiento de agenda</li>
+                <li>La importancia de la comunicación interna</li>
+                <li>Estrategia de comunicación interna</li>
+                <li>Tipos de comunicación interna</li>
+                <li>Errores en la comunicación interna</li>
+            </ul>
+            <ul id="contenido15">
+                <li>Importancia</li>
+                <li>Directrices básicas</li>
+                <li>En redes sociales</li>
+            </ul>
+            <ul id="contenido16">
+                <li>Importancia</li>
+                <li>El por qué de la comunicación en márketing</li>
+                <li>Formas de comunicar</li>
+                <li>Principios I</li>
+                <li>Principios II</li>
+                <li>Por qué usar creatividad en márketing</li>
+                <li>Beneficios de la creatividad en marketing</li>
+            </ul>
+            <ul id="contenido17">
+                <li>Principios básicos</li>
+                <li>Escuchar activamente</li>
+                <li>Clases de comunicación oral</li>
+            </ul>
+            <ul id="contenido18">
+                <li>El diálogo</li>
+                <li>El discurso</li>
+                <li>El debate</li>
+                <li>La entrevista</li>
+                <li>La comunicación oral dentro de la empresa</li>
+            </ul>
+            <ul id="contenido19">
+                <li>Normas de comunicación y expresión escrita</li>
+                <li>Las cartas comerciales: Tipos.</li>
+                <li>Cartas circulares</li>
+                <li>Comunicaciones breves</li>
+                <li>La instancia, el oficio y el certificado</li>
+                <li>Archivo de las comunicaciones escritas</li>
+                <li>Archivo de la comunicación escrita: El libro de registro</li>
+            </ul>
+
+        </div>
+        <form action method="post">
+            <textarea id="texto" name="texto"     
+                style="width:90%;height:500px;"></textarea>
+        </form>
+    </body>
+</html>

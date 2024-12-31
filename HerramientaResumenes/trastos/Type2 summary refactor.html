@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Type2 summary refactor</title>
+        <script src="SummaryBuilder.js"></script>
+        <script>            
+
+/**
+ * window.onload event handler
+ * 
+ *
+ * This function is called when the page has finished loading. It will:
+ * - Set up the colors for the tree and the blocks
+ * - Fill the tree with data
+ * - Create the tree items
+ * - Create the blocks and add them to the page
+ * - Remove the "todo_contenido" div from the page
+ * - Put all the HTML content into a textarea
+ * 
+ * @param {Event} event The window.onload event
+ */
+            window.onload = function() {
+                const margen="<br><br><br><br>";
+                const blanco = "#ffffff";
+                const negro = "#000000";
+                const naranjaP="#aa3d00";
+                const naranjaS="#db9d00";
+                const naranjaT="#ffdbb9";
+                const azulP="#0051A3";
+                const azulS="#61bee9";
+                const azulT='#d9e8ff';
+                const verdeP="#3c6500";
+                const verdeS="#93a140";
+                const verdeT="#cdffcd";
+                const moradoP="#5f0079";
+                const moradoS="#8a53c2";
+                const moradoT="#e4cdff";
+                const rojoP="#ce170c";
+                const rojoS="#ce332a";
+                const rojoT="#ff6968";
+
+                let coloresPrincipales=[azulP,naranjaP,verdeP,moradoP];
+                let coloresSecundarios=[azulS,naranjaS,verdeS,moradoS];
+                let coloresColumnas=[azulT,naranjaT,verdeT,moradoT];
+                let coloresFlechas=[moradoS,verdeS,azulS,naranjaS];
+                //
+
+                let unidades=[
+                "Unidad de aprendizaje 1: Técnicas y variables del entorno que potencian la actitud y capacidad emprendedora.",
+                "Unidad de aprendizaje 2: Análisis de oportunidades de negocio",
+                "Unidad de aprendizaje 3: Planificación económico-financiera previsional de la actividad económica en pequeños negocios o mic.",
+                "Unidad de aprendizaje 4: Viabilidad económico-financiera y rentabilidad del pequeño negocio o microempresa."
+                ];
+                unidades=reduceArrayToLength(unidades,2);
+                let unidadActual=1;
+                fillScormTree("UF1818: ACTITUD EMPRENDEDORA Y OPORTUNIDADES DE NEGOCIO",unidades,unidadActual);
+                
+                //document.getElementById("scorm_tree").style.cssText="background-color: red; border: #4376ab 4px solid; border-radius: 20px;";
+                document.getElementById("UnidadAprendizajeActual").textContent="UA"+(unidadActual+1)+": Técnicas y variables del entorno que potencian la actitud y capacidad emprendedora.";
+
+                //bloqueFlecha id_num titulo subtitulo color_flecha color_tablaP color_secundario
+
+                let subtitulos=[
+                    "Ámbito Temático",
+                    "Conceptos",
+                    "Objetivo Final",
+                    "DESARROLLO DE CAPACIDADES EMPRENDEDORAS",
+                    "TRABAJO EN EQUIPO",
+                    "Confección y presentación de informes",
+                    "Comunicación no presencial",
+                    "Comunicación escrita"
+                ];
+                subtitulos=reduceArrayToLength(subtitulos,3);
+                const ejemplos=[
+                    "","","","","","",
+                    "Reglas de la comunicación telefónica"
+                ];
+                let ejemLen=ejemplos.length;
+                //comentar/descomentar para que se utilizen "ejemplos" o no
+                ejemLen=-1;
+                const maxElementosPorColumna=[
+                  1,1,1,0,0,0,2,2,2,2
+                ];
+                const maxElementosPorEjemplo=[
+                  0,0,0,0,0,0,1,0
+                ];
+                //al depender el bucle de los subtitulos aunque abajo se dejencosas sin borrar no aparecen
+                const subtTituLength = subtitulos.length;
+
+                coloresPrincipales[subtTituLength-1]=rojoP;
+                coloresSecundarios[subtTituLength-1]=rojoS;
+                coloresColumnas[subtTituLength-1]=rojoT;
+                coloresFlechas[subtTituLength-1]=rojoS;
+                // coloresPrincipales.splice(5,0,rojoP);
+                // coloresSecundarios.splice(5,0,rojoS);
+                // coloresColumnas.splice(5,0,rojoT);
+                // coloresFlechas.splice(2,0,rojoS);
+                for (let i = 0; i < subtTituLength; i++) {
+                    let colorIndex = i % coloresSecundarios.length;
+                    //let tabla=tablaContenidos(subtitulos[colorIndex], false, coloresSecundarios[colorIndex], coloresColumnas[colorIndex], ["contenido" + (i + 1), maxElementosPorColumna[colorIndex]]);
+                    let tabla=tablaContenidos(subtitulos[colorIndex], false, coloresSecundarios[colorIndex], coloresColumnas[colorIndex], ["contenido" + (i + 1), maxElementosPorColumna[colorIndex]]);
+
+                    let bloquer = new BloquesFlechaClass(i,i == subtTituLength - 1 ? true : false);
+                    bloquer.setFlechaColor(coloresFlechas[colorIndex],blanco);
+                    bloquer.setBloqueFlechaProperty("width", "fit-content");
+                    // bloquer.setBloqueFlechaProperty("margin-right","20%");
+                    bloquer.buildBloque(tabla);
+                }
+                document.getElementById("todo_contenido").style.display  = "none";
+                let todasTablas=document.getElementById("todas_tablas");
+                todasTablas.style.display="flex";
+                todasTablas.style.flexDirection="column";
+                todasTablas.style.alignItems="center";
+                todasTablas.innerHTML=todasTablas.innerHTML+margen;
+                let plant_info=document.querySelector(".plantilla_info");
+                plant_info.insertAdjacentHTML('beforebegin', margen);
+
+                //"exportador" de html
+                // let bloqueFlechas = document.querySelectorAll("[id^='bloque_flecha_']");
+
+                let scormTree = document.getElementById('scorm_tree').outerHTML;
+                let htmlContent = scormTree;
+                htmlContent = htmlContent+margen+plant_info.outerHTML;
+                // bloqueFlechas.forEach(bloque => {
+                //     htmlContent += bloque.outerHTML;
+                // });
+                htmlContent += todasTablas.outerHTML;
+
+                document.body.removeChild(document.getElementById("todo_contenido"));
+
+                document.getElementById('texto').value = htmlContent+margen;
+            };
+        </script>
+    </head>
+    <body>
+        <h1>OBSOLETO</h1>
+        <div id="scorm_tree"></div>
+        <div class="plantilla_info"
+            style="width: fit-content; margin: 20px auto;">
+            <div class="contenedor"
+                style="width: 100%; color: #4376ab; background-color: #ffffff; display: flex; flex-direction: row; justify-content: center; align-items: stretch; border: #4376ab 4px solid; border-radius: 20px;">
+                <div class="cuadro_texto"
+                    style="flex: 4; padding: 8px; font-weight: bold; font-size: 1.5em; text-align: center;">
+                    <div id="UnidadAprendizajeActual" style="color: #0079f7;font-size: 1.2em; font-weight: bold;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="todas_tablas">
+
+        </div>
+        <div id="todo_contenido">
+            <ul id="ejemplo1">
+                <li>Introducción</li>
+                <li>Habilidades</li>
+                <li>Aptitudes</li>
+                <li>Actitudes Personales</li>                  
+            </ul>
+            <ul id="ejemplo7">          
+                <li>Posicionamiento</li>
+                <li>Toma de decisiones</li>
+            </ul>
+
+            <ul id="contenido1">
+                <li>Búsqueda de información estratégica</li>
+                <li>Análisis DAF0</li>
+                <li>Diseño de estrategias competitivas</li>
+            </ul>
+            <ul id="contenido2">
+                <li>Posicionamiento</li>
+                <li>Toma de decisiones</li>
+            </ul>
+            <ul id="contenido3">
+                <li>Trámites administrativos</li>
+            </ul>
+            <ul id="contenido4">
+                <li>Estructura y funciones de una base de datos</li>
+                <li>Tipos de base de datos</li>
+                <li>Bases de datos documentales</li>
+                <li>Utilización de bases de datos: búsqueda y recuperación de archivos y registros</li>
+                <li>Grabación, modificación y borrado de información</li>
+                <li>Consulta de información</li>
+            </ul>
+            <ul id="contenido5">
+                <li>Procedimientos de protección de datos</li>
+            </ul>
+            <ul id="contenido6">
+                <li>Principios básicos</li>
+                <li>Escucha activa</li>
+            </ul>
+            <ul id="contenido7">
+                <li>Características y tipología</li>
+                <li>Barreras y dificultades: Modelos de comunicación telefónica</li>
+                <li>Expresión verbal a través del teléfono</li>
+                <li>Comunicación no verbal: La sonrisa telefónica</li>
+            </ul>
+            <ul id="contenido8">
+                <li>Cartas, faxes</li>
+                <li>Correo electrónico, elementos clave</li>
+                <li>Mensajería instantánea: Características</li>
+                <li>Comunicación en las redes: Intra/Internet</li>
+            </ul>
+            <ul id="contenido9">
+                <li>Herramientas de diseño web</li>
+                <li>CM</li>
+            </ul>
+            <ul id="contenido10">
+                <li>Criterios a tener en cuenta para la reutilización de contenidos</li>
+                <li>La calidad de los contenidos</li>
+                <li>Tips para hacer tus contenidos más virales</li>
+                <li>Cómo optimizar tu plan de contenidos</li>
+                <li>Una buena estrategia para impulsar tu blog</li>
+                <li>Claves para rediseñar tu web</li>
+                <li>Lo que debes evitar en tu página web</li>
+                <li>Campañas de vídeo. ¿Facebook o Youtube?</li>
+            </ul>
+            <ul id="contenido11">
+                <li>Aptitudes del comunicador efectivo</li>
+                <li>La asertividad</li>
+                <li>La persuasión</li>
+                <li>La empatía</li>
+                <li>Actividades 1</li>
+                <li>Actividades 2</li>
+                <li>Evaluación</li>
+            </ul>
+            <ul id="contenido12">
+                <li>Inteligencia emocional</li>
+                <li>Barreras y dificultades de la comunicación comercial presencial</li>
+                <li>La comunicación no verbal a través del comportamiento y el cuerpo I</li>
+                <li>La comunicación no verbal a través del comportamiento y el cuerpo II</li>
+                <li>La comunicación no verbal a través del cuerpo: manos, mirada, posición, espacio entre interlocutores u otros</li>
+                <li>Claves para dominar la venta sin palabras</li>
+            </ul>
+            <ul id="contenido13">
+                <li>Recursos y medios de comunicación no presencial</li>
+                <li>Barreras en la comunicación no presencial</li>
+                <li>Técnicas de la sonrisa telefónica: Concepto</li>
+                <li>Técnicas de la sonrisa telefónica: Práctica</li>
+                <li>Cartas y documentación comercial escrita: Misión</li>
+                <li>Cartas y documentación comercial escrita: Cualidades fundamentales</li>
+            </ul>
+            <ul id="contenido14">
+                <li>Introducción</li>
+                <li>La teoría hipodérmica, las 5 preguntas y el flujo en dos pasos</li>
+                <li>La teoría de Gatekeeper, los usos y gratificaciones y el establecimiento de agenda</li>
+                <li>La importancia de la comunicación interna</li>
+                <li>Estrategia de comunicación interna</li>
+                <li>Tipos de comunicación interna</li>
+                <li>Errores en la comunicación interna</li>
+            </ul>
+            <ul id="contenido15">
+                <li>Importancia</li>
+                <li>Directrices básicas</li>
+                <li>En redes sociales</li>
+            </ul>
+            <ul id="contenido16">
+                <li>Importancia</li>
+                <li>El por qué de la comunicación en márketing</li>
+                <li>Formas de comunicar</li>
+                <li>Principios I</li>
+                <li>Principios II</li>
+                <li>Por qué usar creatividad en márketing</li>
+                <li>Beneficios de la creatividad en marketing</li>
+            </ul>
+            <ul id="contenido17">
+                <li>Principios básicos</li>
+                <li>Escuchar activamente</li>
+                <li>Clases de comunicación oral</li>
+            </ul>
+            <ul id="contenido18">
+                <li>El diálogo</li>
+                <li>El discurso</li>
+                <li>El debate</li>
+                <li>La entrevista</li>
+                <li>La comunicación oral dentro de la empresa</li>
+            </ul>
+            <ul id="contenido19">
+                <li>Normas de comunicación y expresión escrita</li>
+                <li>Las cartas comerciales: Tipos.</li>
+                <li>Cartas circulares</li>
+                <li>Comunicaciones breves</li>
+                <li>La instancia, el oficio y el certificado</li>
+                <li>Archivo de las comunicaciones escritas</li>
+                <li>Archivo de la comunicación escrita: El libro de registro</li>
+            </ul>
+
+        </div>
+        <form action method="post">
+            <textarea id="texto" name="texto"
+                style="width:90%;height:500px;"></textarea>
+        </form>
+    </body>
+</html>
